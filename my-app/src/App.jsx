@@ -1,52 +1,112 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
+import Confetti from "react-confetti";
 
 const App = () => {
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState(() => {
+    // Load count from localStorage
+    const saved = localStorage.getItem("count");
+    return saved ? parseInt(saved) : 0;
+  });
   const [darkMode, setDarkMode] = useState(false);
   const [color, setColor] = useState("#4CAF50");
   const [message, setMessage] = useState("");
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const randomColor = () => {
     const colors = ["#4CAF50", "#2196F3", "#FF9800", "#E91E63", "#9C27B0", "#00BCD4"];
     return colors[Math.floor(Math.random() * colors.length)];
   };
 
+  // Save count persistently
+  useEffect(() => {
+    localStorage.setItem("count", count);
+  }, [count]);
+
+  const playClickSound = () => {
+    const audio = new Audio(
+      "https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"
+    );
+    audio.volume = 0.3;
+    audio.play();
+  };
+
   const increment = () => {
+    playClickSound();
     const newCount = count + 1;
     setCount(newCount);
     setColor(randomColor());
-    if (newCount === 5) setMessage("🎉 You reached 5!");
-    else if (newCount === 10) setMessage("🔥 You reached 10! Amazing!");
-    else setMessage("");
+
+    if (newCount === 5) {
+      setMessage("🎉 You reached 5!");
+      triggerConfetti();
+    } else if (newCount === 10) {
+      setMessage("🔥 You reached 10! Amazing!");
+      triggerConfetti();
+    } else if (newCount === 20) {
+      setMessage("🚀 Level Up! You’re unstoppable!");
+      triggerConfetti();
+    } else setMessage("");
   };
 
   const decrement = () => {
-    if (count > 0) setCount(count - 1);
-    setMessage("");
+    if (count > 0) {
+      playClickSound();
+      setCount(count - 1);
+      setMessage("");
+    }
   };
 
   const reset = () => {
+    playClickSound();
     setCount(0);
     setMessage("");
   };
 
   const toggleTheme = () => setDarkMode(!darkMode);
 
+  const triggerConfetti = () => {
+    setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 2000);
+  };
+
+  // Emoji changes with count mood
+  const getMoodEmoji = () => {
+    if (count < 5) return "🙂";
+    if (count < 10) return "😎";
+    if (count < 20) return "🔥";
+    return "🤯";
+  };
+
   return (
     <div
       style={{
         ...styles.container,
-        background: darkMode ? "#222" : "#f5f5f5",
-        color: darkMode ? "#fff" : "#333",
+        background: darkMode ? "#121212" : "#f5f5f5",
+        color: darkMode ? "#f1f1f1" : "#333",
         transition: "all 0.5s ease",
       }}
     >
-      <h1 style={{ ...styles.heading, color }}>Hello World 🌍</h1>
-      <p style={styles.text}>This is an interactive React example.</p>
+      {showConfetti && <Confetti />}
+
+      <h1 style={{ ...styles.heading, color }}>
+        Hello World {getMoodEmoji()}
+      </h1>
+      <p style={styles.text}>This is an upgraded interactive React app ⚡</p>
 
       <h2 style={{ ...styles.counter, color: color, transition: "0.3s" }}>
         Count: {count}
       </h2>
+
+      {/* Progress Bar */}
+      <div style={styles.progressBarContainer}>
+        <div
+          style={{
+            ...styles.progressBar,
+            width: `${(count / 20) * 100}%`,
+            background: color,
+          }}
+        ></div>
+      </div>
 
       {message && <p style={styles.message}>{message}</p>}
 
@@ -81,6 +141,10 @@ const App = () => {
       >
         {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
       </button>
+
+      <footer style={{ marginTop: "30px", opacity: 0.8 }}>
+        Made with ❤️ using React
+      </footer>
     </div>
   );
 };
@@ -90,11 +154,11 @@ const styles = {
   container: {
     textAlign: "center",
     padding: "40px",
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "Poppins, sans-serif",
     minHeight: "100vh",
   },
   heading: {
-    fontSize: "2.5rem",
+    fontSize: "2.8rem",
   },
   text: {
     fontSize: "18px",
@@ -134,6 +198,19 @@ const styles = {
     fontSize: "16px",
     cursor: "pointer",
     transition: "0.3s",
+  },
+  progressBarContainer: {
+    width: "80%",
+    height: "12px",
+    background: "#ddd",
+    borderRadius: "6px",
+    margin: "15px auto",
+    overflow: "hidden",
+  },
+  progressBar: {
+    height: "100%",
+    borderRadius: "6px",
+    transition: "width 0.4s ease",
   },
 };
 
